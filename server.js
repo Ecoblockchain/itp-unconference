@@ -148,8 +148,6 @@ function getData (req,res){
 }
 
 function twilioCallback (req,res){
-  console.log(req.body.Body);
-
   var newMsg = req.body.Body;
   var conversationId; // an id to track the conversation, will be the mongoDb id
 
@@ -220,11 +218,12 @@ function twilioCallback (req,res){
        }
        // save to db;
        var topic = new Topic(dataToSave);
+       console.log("dataToSave"+topic);
         topic.saveQ()
         .then(function (response){
+          console.log("try to save learn data");
           emitSocketMsg('learn',response);
           respondBackToTwilio('learn');
-          console.log("try to save learn data");
         })
         .fail(function (err) { console.log(err); })
         .done();
@@ -316,6 +315,7 @@ function twilioCallback (req,res){
   }
 
   function emitSocketMsg(key,data){
+    console.log("emitSocketMsg");
     var dataToRelay = {key:key,topic:data};
     io.sockets.emit('twilioData',dataToRelay);
   }
