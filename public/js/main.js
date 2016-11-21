@@ -16,7 +16,7 @@ $(document).ready(function(){
 	          '<div class="topic-holder col-md-3 '+posClass+' '+rotClass+' '+sizeClass+'" id="'+data.teach[index]._id+'">' +
 	          	'<p class="headings '+fontClass+' '+fontSizeClass+'">'+data.teach[index].description+ '</p>' +
               '<p class="vote-count">'+data.teach[index].voteCount+' votes &nbsp (Text "Vote ' +data.teach[index].voteCode+'")</p>' +
-	        	'</div>'				  
+	        	'</div>'
 	        );
 	      });
 				$.each(data.learn, function(index) {
@@ -25,14 +25,14 @@ $(document).ready(function(){
           var sizeClass = randomizeSize();
           var fontClass = randomizeFont();
           var fontSizeClass = '';
-          if(data.learn[index].description.length >= 60) fontSizeClass = 'makeSmaller';  
+          if(data.learn[index].description.length >= 60) fontSizeClass = 'makeSmaller';
 	        $('#learn').append(
             '<div class="topic-holder col-md-3 '+posClass+' '+rotClass+' '+sizeClass+'" id="'+data.learn[index]._id+'">' +
 	          	'<p class="headings '+fontClass+' '+fontSizeClass+'">'+data.learn[index].description+'</p>' +
 	          	'<p class="vote-count">'+data.learn[index].voteCount+' votes &nbsp (Text "Vote ' +data.learn[index].voteCode+'")</p>' +
-	        	'</div>'				  
+	        	'</div>'
 	        );
-	      });					
+	      });
 			});
 		}
 });
@@ -46,19 +46,19 @@ function randomizePos(){
 function randomizeRot(){
   var classList = ['rotCW','rotCC'];
   var ran = Math.floor((Math.random() * (classList.length)) + 0);;
-  return classList[ran];    
+  return classList[ran];
 }
 
 function randomizeSize(){
   var classList = ['shrink90','shrink80',''];
   var ran = Math.floor((Math.random() * (classList.length)) + 0);;
-  return classList[ran];   
+  return classList[ran];
 }
 
 function randomizeFont(){
   var classList = ['hand','sketch_chalk','handlee','patrickhand','gochihand','patrickhand2'];
   var ran = Math.floor((Math.random() * (classList.length)) + 0);;
-  return classList[ran];    
+  return classList[ran];
 }
 
 function randomNumber(min, max){
@@ -67,7 +67,7 @@ function randomNumber(min, max){
 
 // local --> http://localhost:5000/
 // server --> https://itp-jan-jam.herokuapp.com/
-var socket = io('https://itp-unconference.herokuapp.com');
+var socket = io('http://localhost:5000/');
 socket.on('connect', function () {
 });
 
@@ -81,12 +81,12 @@ socket.on('twilioData', function (data) {
       var sizeClass = randomizeSize();
       var fontClass = randomizeFont();
       var fontSizeClass = '';
-      if(data.topic.description.length >= 60) fontSizeClass = 'makeSmaller';      
+      if(data.topic.description.length >= 60) fontSizeClass = 'makeSmaller';
       $('#teach').prepend(
         '<div class="topic-holder col-md-3 '+posClass+' '+rotClass+' '+sizeClass+'" id="'+data.topic._id+'">' +
           '<p class="headings '+fontClass+' '+fontSizeClass+'">'+data.topic.description+ '</p>' +
           '<p class="vote-count">'+data.topic.voteCount+' votes &nbsp (Text "Vote ' +data.topic.voteCode+'")</p>' +
-      	'</div>'				  
+      	'</div>'
       );
       //animate
       $teach = $('#teach').find('#'+data.topic._id);
@@ -104,7 +104,7 @@ socket.on('twilioData', function (data) {
 
       for(var i = 0; i < numVCChars; i++){
         tl.from(mySplitVC.chars[i], 2, {z:randomNumber(-500,300), opacity:0, rotationY:randomNumber(-40, 40)}, numHChars*.2+i*.2);
-      }     		
+      }
   		break;
   	case 'learn':
   		//render teach data
@@ -113,7 +113,7 @@ socket.on('twilioData', function (data) {
       var sizeClass = randomizeSize();
       var fontClass = randomizeFont();
       var fontSizeClass = '';
-      if(data.topic.description.length >= 60) fontSizeClass = 'makeSmaller';      
+      if(data.topic.description.length >= 60) fontSizeClass = 'makeSmaller';
       $('#learn').prepend(
         '<div class="topic-holder col-md-3 '+posClass+' '+rotClass+' '+sizeClass+'" id="'+data.topic._id+'">' +
         	'<p class="headings '+fontClass+' '+fontSizeClass+'">'+data.topic.description+'</p>' +
@@ -136,18 +136,18 @@ socket.on('twilioData', function (data) {
 
         for(var i = 0; i < numVCChars; i++){
           tl.from(mySplitVC.chars[i], 2, {z:randomNumber(-500,300), opacity:0, rotationY:randomNumber(-40, 40)}, numHChars*.2+i*.2);
-        }        		
+        }
   		break;
   	// case 'name':
   	// 	//render teach data
   	// 	$("#"+data.topic._id+" .session-leader").text('with ' +data.topic.person.name);
   	// 	$("#"+data.topic._id+" .session-leader").show();
-  	// 	break;  		
+  	// 	break;
   	case 'vote':
   		//render teach data
   		$("#"+data.topic._id+" .vote-count").html(data.topic.voteCount+' votes &nbsp (Text "Vote ' +data.topic.voteCode+'")');
   		break;
   	default:
-  		console.log('invalid twilio socket event');	  		  		
-  }   
+  		console.log('invalid twilio socket event');
+  }
 });

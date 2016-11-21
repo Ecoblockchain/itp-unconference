@@ -39,7 +39,8 @@ app.configure(function(){
   app.use(express.static(path.join(__dirname, 'public')));
 
   // database connection
-  app.db = mongoose.connect(process.env.MONGOLAB_URI);
+  mongoose.Promise = global.Promise;
+  app.db = mongoose.connect(process.env.MONGODB_URI);
   console.log("connected to database");
 
 });
@@ -318,4 +319,4 @@ function twilioCallback (req,res){
 // listen
 server.listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
-}); 
+});
