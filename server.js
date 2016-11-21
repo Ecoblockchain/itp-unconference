@@ -148,6 +148,7 @@ function getData (req,res){
 }
 
 function twilioCallback (req,res){
+  console.log(req.body);
 
   var newMsg = req.body.Body;
   var conversationId; // an id to track the conversation, will be the mongoDb id
