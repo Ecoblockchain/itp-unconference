@@ -67,7 +67,7 @@ function randomNumber(min, max){
 
 // local --> http://localhost:5000/
 // server --> https://itp-jan-jam.herokuapp.com/
-var socket = io('http://localhost:5000/');
+var socket = io('http://itp-unconf-2017.herokuapp.com/');
 socket.on('connect', function () {
 });
 
