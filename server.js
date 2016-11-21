@@ -11,6 +11,11 @@ var mongoose = require('mongoose-q')(require('mongoose')); // convenience method
 // the ExpressJS App
 var app = express();
 
+// for testing
+if (!process.env.TWILIO_AUTH_TOKEN) {
+  require('dotenv').load();
+}
+
 // configuration of port, templates (/views), static files (/public)
 // and other expressjs settings for the web server.
 app.configure(function(){
@@ -36,7 +41,7 @@ app.configure(function(){
   // database connection
   app.db = mongoose.connect(process.env.MONGOLAB_URI);
   console.log("connected to database");
-  
+
 });
 
 app.configure('development', function(){
@@ -78,7 +83,7 @@ io.on('connection', function(socket){
 });
 
 /*
- * 
+ *
  * Routes contains the functions (callbacks) associated with the above request urls.
  */
 
@@ -90,7 +95,7 @@ var Topic = require("./models/model.js"); //db model... call like Model.Topic
 var twilio = require('twilio');
 
 function index (req, res) {
-  
+
     //build and render template
     var viewData = {
       pageTitle : "ITP January"
@@ -102,7 +107,7 @@ function index (req, res) {
 
 
 function teach (req, res) {
-  
+
     //build and render template
     var viewData = {
       pageTitle : "TEACH | ITP January"
@@ -114,7 +119,7 @@ function teach (req, res) {
 
 
 function learn (req, res) {
-  
+
     //build and render template
     var viewData = {
       pageTitle : "LEARN | ITP January"
@@ -131,13 +136,13 @@ function getData (req,res){
   .then(function(response){
     data['teach'] = response;
     return Topic.find({'type':'learn'}).sort('-dateAdded').execQ()
-  }) 
+  })
   .then(function(response){
     data['learn'] = response;
     return res.json(data);
-  }) 
+  })
   .fail(function (err) { console.log(err); })
-  .done(); 
+  .done();
 
 }
 
@@ -174,7 +179,7 @@ function twilioCallback (req,res){
         respondBackToTwilio('default');
      }
 
-  //function does 3 things 
+  //function does 3 things
   // 1. saves the data to db
   // 2. calls function to emit it to front-end via sockets
   // 3. responds back to twilio
@@ -190,7 +195,7 @@ function twilioCallback (req,res){
         voteCode: generateVoteCode()
        }
        // save to db;
-       var topic = Topic(dataToSave);         
+       var topic = Topic(dataToSave);
         topic.saveQ()
         .then(function (response){
           conversationId = response._id;
@@ -199,7 +204,7 @@ function twilioCallback (req,res){
           respondBackToTwilio('teach');
         })
         .fail(function (err) { console.log(err); })
-        .done(); 
+        .done();
         break;
 
       case 'learn':
@@ -210,14 +215,14 @@ function twilioCallback (req,res){
         voteCode: generateVoteCode()
        }
        // save to db;
-       var topic = new Topic(dataToSave);         
+       var topic = new Topic(dataToSave);
         topic.saveQ()
-        .then(function (response){ 
+        .then(function (response){
           emitSocketMsg('learn',response);
           respondBackToTwilio('learn');
         })
         .fail(function (err) { console.log(err); })
-        .done();    
+        .done();
         break;
       case 'vote':
         // increment the vote in the db and then let the front-end know
@@ -228,7 +233,7 @@ function twilioCallback (req,res){
             emitNewData = false;
             return respondBackToTwilio('vote-fail');
           }
-          else { 
+          else {
             var newVoteCount = response.voteCount + 1;
             var topicId = response._id;
             return Topic.findByIdAndUpdateQ(topicId,{'voteCount':newVoteCount})
@@ -241,10 +246,10 @@ function twilioCallback (req,res){
             respondBackToTwilio('vote');
           }
           else return;
-        }) 
+        })
         .fail(function (err) { console.log(err); })
-        .done();       
-        break; 
+        .done();
+        break;
       case 'name':
         // add the user's name for the topic they want to teach
         var dataToSave = {person: {name:msg,phoneNumber: req.body.From}}
@@ -252,24 +257,24 @@ function twilioCallback (req,res){
         Topic.findByIdAndUpdateQ(topicId,dataToSave)
         .then(function(response){
           if(response == null) return respondBackToTwilio('name-fail');
-          else { 
+          else {
             //emitSocketMsg('name',response);
             return respondBackToTwilio('name');
           }
         })
         .fail(function (err) { console.log(err); })
-        .done();       
-        break;               
+        .done();
+        break;
       default:
         res.status(500).send({error:'Oops, something went wrong.'});
-    }   
-  }   
+    }
+  }
 
   function generateVoteCode(){
     var code = '';
     var possible = "abcdefghjkmnpqrstuvwxyz23456789";
     for(var i=0;i<3;i++)
-      code += possible.charAt(Math.floor(Math.random() * possible.length));   
+      code += possible.charAt(Math.floor(Math.random() * possible.length));
     return code;
   }
 
@@ -296,12 +301,12 @@ function twilioCallback (req,res){
         break;
       case 'name-fail':
         twilioResp.sms('Oops! Could not find any topic for you :( Email slover@nyu.edu with your name and session.');
-        break;                  
+        break;
       default:
         twilioResp.sms('We got your message, but you need to start it with either teach, learn, vote, or name!');
       }
     res.set('Content-Type', 'text/xml');
-    res.send(twilioResp.toString());    
+    res.send(twilioResp.toString());
   }
 
   function emitSocketMsg(key,data){
@@ -310,7 +315,7 @@ function twilioCallback (req,res){
   }
 }
 
-// listen 
+// listen
 server.listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
 }); 
