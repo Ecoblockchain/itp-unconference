@@ -148,7 +148,7 @@ function getData (req,res){
 }
 
 function twilioCallback (req,res){
-  console.log(req.body);
+  console.log(req.body.Body);
 
   var newMsg = req.body.Body;
   var conversationId; // an id to track the conversation, will be the mongoDb id
@@ -187,6 +187,7 @@ function twilioCallback (req,res){
   // 3. responds back to twilio
 
   function handleTwilioMessage(key,msg){
+    console.log("handleTwilioMessage: "+key);
     switch(key) {
       case 'teach':
        var dataToSave = {
@@ -204,6 +205,7 @@ function twilioCallback (req,res){
           conversationId = conversationId.toString();
           emitSocketMsg('teach',response);
           respondBackToTwilio('teach');
+          console.log("try to save teach data");
         })
         .fail(function (err) { console.log(err); })
         .done();
@@ -222,6 +224,7 @@ function twilioCallback (req,res){
         .then(function (response){
           emitSocketMsg('learn',response);
           respondBackToTwilio('learn');
+          console.log("try to save learn data");
         })
         .fail(function (err) { console.log(err); })
         .done();
@@ -281,6 +284,7 @@ function twilioCallback (req,res){
   }
 
   function respondBackToTwilio(key){
+    console.log('respondBackToTwilio');
 
     var twilioResp = new twilio.TwimlResponse();
 
