@@ -4,7 +4,7 @@
  */
 
 var express = require('express');
-var http = require('http');
+var https = require('https');
 var path = require('path');
 var mongoose = require('mongoose-q')(require('mongoose')); // convenience methods for Q with mongoose. see https://github.com/iolo/mongoose-q
 
@@ -73,7 +73,7 @@ app.get('/api/get/topics',getData);
 app.post('/twilio-callback',twilioCallback);
 
 // create NodeJS HTTP server using 'app'
-var server = require('http').createServer(app);
+var server = require('https').createServer(app);
 
 // set up sockets
 var io = require('socket.io')(server);
