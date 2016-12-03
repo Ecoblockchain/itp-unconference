@@ -225,7 +225,9 @@ function twilioCallback (req,res){
           emitSocketMsg('learn',response);
           respondBackToTwilio('learn');
         })
-        .fail(function (err) { console.log(err); })
+        .fail(function (err) {
+          console.log("can't save");
+          console.log(err); })
         .done();
         break;
       case 'vote':
