@@ -1,7 +1,7 @@
 
 /*
  * routes/routes.js
- * 
+ *
  * Routes contains the functions (callbacks) associated with request urls.
  */
 
@@ -18,7 +18,7 @@ var twilio = require('twilio');
 	GET /
 */
 exports.index = function(req, res) {
-	
+
 		//build and render template
 		var viewData = {
 			pageTitle : "ITP January"
@@ -29,7 +29,7 @@ exports.index = function(req, res) {
 }
 
 exports.getData = function(req,res){
-
+console.log("route.js getData"+res);
 	var data = {}; // data to respond back with
 
 	//console.log(socketsUtil);
@@ -39,13 +39,13 @@ exports.getData = function(req,res){
 	.then(function(response){
 		data['teach'] = response;
 		return Topic.findQ({'type':'learn'})
-	}) 
+	})
 	.then(function(response){
 		data['learn'] = response;
 		return res.json(data);
-	}) 
+	})
 	.fail(function (err) { console.log(err); })
-	.done(); 
+	.done();
 
 }
 
@@ -82,7 +82,7 @@ exports.twilioCallback =  function(req,res){
 	    	respondBackToTwilio('default');
 	   }
 
-	//function does 3 things 
+	//function does 3 things
 	// 1. saves the data to db
 	// 2. calls function to emit it to front-end via sockets
 	// 3. responds back to twilio
@@ -97,7 +97,7 @@ exports.twilioCallback =  function(req,res){
 	     	voteCode: generateVoteCode()
 	     }
 	     // save to db;
-	     var topic = Topic(dataToSave);		    	
+	     var topic = Topic(dataToSave);
 	    	topic.saveQ()
 	    	.then(function (response){
 	    		conversationId = response._id.str;
@@ -106,7 +106,7 @@ exports.twilioCallback =  function(req,res){
 	    		respondBackToTwilio('teach');
 				})
 				.fail(function (err) { console.log(err); })
-				.done(); 
+				.done();
         break;
 
 	    case 'learn':
@@ -117,21 +117,21 @@ exports.twilioCallback =  function(req,res){
 	     	voteCode: generateVoteCode()
 	     }
 	     // save to db;
-	     var topic = new Topic(dataToSave);		    	
+	     var topic = new Topic(dataToSave);
 	    	topic.saveQ()
-	    	.then(function (response){ 
+	    	.then(function (response){
 	    		emitSocketMsg('learn',response);
 	    		respondBackToTwilio('teach');
 				})
 				.fail(function (err) { console.log(err); })
-				.done();    
+				.done();
         break;
 	    case 'vote':
 	    	// handle this differently
 	    	Topic.findOneQ({'voteCode':msg})
 	    	.then(function(response){
 	    		if(response == null) return respondBackToTwilio('vote-fail');
-	    		else { 
+	    		else {
 	    			var newVoteCount = response.voteCount + 1;
 	    			var topicId = response._id;
 	    			return Topic.findByIdAndUpdateQ(topicId,{'voteCount':newVoteCount})
@@ -140,20 +140,20 @@ exports.twilioCallback =  function(req,res){
 	    	.then(function(response){
 	    		emitSocketMsg('vote',response);
 	    		respondBackToTwilio('vote');
-	    	}) 
+	    	})
 	    	.fail(function (err) { console.log(err); })
-				.done();       
-        break;	        
+				.done();
+        break;
 	    default:
 	      res.status(500).send({error:'Oops, something went wrong.'});
-		}		
-	}		
+		}
+	}
 
 	function generateVoteCode(){
 		var code = '';
 		var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 		for(var i=0;i<3;i++)
-			code += possible.charAt(Math.floor(Math.random() * possible.length));		
+			code += possible.charAt(Math.floor(Math.random() * possible.length));
 		return code;
 	}
 
@@ -174,12 +174,12 @@ exports.twilioCallback =  function(req,res){
 	    	break;
 	    case 'vote-fail':
 	    	twilioResp.sms('Oops! Could not find that vote code ('+msgToRelay+') :( Try again');
-	    	break;	    	
+	    	break;
 	    default:
 	      twilioResp.sms('We got your message, but you need to start it with either teach, learn or vote!');
 	  	}
 		res.set('Content-Type', 'text/xml');
-  	res.send(twilioResp.toString());		
+  	res.send(twilioResp.toString());
 	}
 
 	function emitSocketMsg(key,data){

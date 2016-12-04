@@ -131,6 +131,7 @@ function learn (req, res) {
 }
 
 function getData (req,res){
+  console.log("server.js getData"+res);
 
   var data = {}; // data to respond back with
   Topic.find({'type':'teach'}).sort('-dateAdded').execQ()
@@ -149,6 +150,7 @@ function getData (req,res){
 
 function twilioCallback (req,res){
   var newMsg = req.body.Body;
+  console.log("server.js twilioCallback " +newMsg);
   var conversationId; // an id to track the conversation, will be the mongoDb id
 
   // let's get the first word, so we know which action they are doing
