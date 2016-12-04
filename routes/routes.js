@@ -3,7 +3,7 @@
  * routes/routes.js
  *
  * Routes contains the functions (callbacks) associated with request urls.
- */
+
 
 var http = require('http');
 var request = require('request'); // library to make requests to remote urls
@@ -13,10 +13,11 @@ var Topic = require("../models/model.js"); //db model... call like Model.Topic
 
 //Twilio
 var twilio = require('twilio');
+ */
 
 /*
 	GET /
-*/
+
 exports.index = function(req, res) {
 
 		//build and render template
@@ -187,3 +188,4 @@ exports.twilioCallback =  function(req,res){
 		io.sockets.emit('twilioData',dataToRelay);
 	}
 }
+*/
