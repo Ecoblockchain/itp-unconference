@@ -199,6 +199,7 @@ function twilioCallback (req,res){
   // 3. responds back to twilio
 
   function handleTwilioMessage(key,msg){
+    console.log("handleTwilioMessage "+msg)
 		switch(key) {
 	    case 'teach':
 	     var dataToSave = {
@@ -208,10 +209,12 @@ function twilioCallback (req,res){
 	     	voteCode: generateVoteCode()
 	     }
 	     // save to db;
+
 	     var topic = new Topic(dataToSave);
+       console.log("new topic "+topic.type);
 	    	topic.saveQ()
 	    	.then(function (response){
-	    		conversationId = response._id.str;
+	    		//conversationId = response._id.str;
 	    		console.log("save teach "+response);
 	    		emitSocketMsg('teach',response);
           console.log("save teach socket emitted");
