@@ -131,7 +131,7 @@ function learn (req, res) {
 }
 
 function getData (req,res){
-  //	var data = {}; // data to respond back with
+  	var data = {}; // data to respond back with
 
   	//console.log(socketsUtil);
   	//socketsUtil.calls('hello','hello world');
@@ -148,41 +148,17 @@ function getData (req,res){
   	// .fail(function (err) { console.log(err); })
   	// .done();
 
-
-      // mongoose method to find all, see http://mongoosejs.com/docs/api.html#model_Model.find
-      Topic.find(function(err, data) {
-        // if err or no things found, respond with error
-        if (err || data == null) {
-          var error = {
-            status: 'ERROR',
-            message: 'Could not find topics'
-          };
-          return res.json(error);
-        }
-
-        // otherwise, respond with the data
-
-        var jsonData = {
-          status: 'OK',
-          topics: data
-        }
-
-        res.json(jsonData);
-
-      });
-
-
-    // Topic.findQ({'type':'teach'})
-    // .then(function(response){
-    //   data['teach'] = response;
-    //   return Topic.findQ({'type':'learn'})
-    // })
-    // .then(function(response){
-    //   data['learn'] = response;
-    //   return res.json(data);
-    // })
-    // .catch(function (err) { console.log(err); })
-    // .done();
+    Topic.findQ({'type':'teach'})
+    .then(function(response){
+      data['teach'] = response;
+      return Topic.findQ({'type':'learn'})
+    })
+    .then(function(response){
+      data['learn'] = response;
+      return res.json(data);
+    })
+    .catch(function (err) { console.log(err); })
+    .done();
 
 }
 
