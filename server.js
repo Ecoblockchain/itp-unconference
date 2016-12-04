@@ -150,7 +150,6 @@ function getData (req,res){
 
 function twilioCallback (req,res){
   var newMsg = req.body.Body;
-  console.log("server.js twilioCallback " +newMsg);
   var conversationId; // an id to track the conversation, will be the mongoDb id
 
   // let's get the first word, so we know which action they are doing
@@ -187,7 +186,6 @@ function twilioCallback (req,res){
   // 3. responds back to twilio
 
   function handleTwilioMessage(key,msg){
-    console.log("handleTwilioMessage: "+key);
     switch(key) {
       case 'teach':
        var dataToSave = {
@@ -198,6 +196,7 @@ function twilioCallback (req,res){
         voteCode: generateVoteCode()
        }
        // save to db;
+       console.log("dataToSave "+dataToSave);
        var topic = Topic(dataToSave);
         topic.saveQ()
         .then(function (response){
