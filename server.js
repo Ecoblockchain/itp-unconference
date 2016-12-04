@@ -157,7 +157,7 @@ function getData (req,res){
       data['learn'] = response;
       return res.json(data);
     })
-    .fail(function (err) { console.log(err); })
+    .catch(function (err) { console.log(err); })
     .done();
 
 }
@@ -176,7 +176,6 @@ function twilioCallback (req,res){
     msgToRelay += words[i];
     if(i!=words.length-1) msgToRelay += ' ';
   }
-console.log(msgToRelay);
   switch(action) {
       case 'teach':
         handleTwilioMessage('teach',msgToRelay);
@@ -209,13 +208,15 @@ console.log(msgToRelay);
 	     	voteCode: generateVoteCode()
 	     }
 	     // save to db;
-	     var topic = Topic(dataToSave);
+	     var topic = new Topic(dataToSave);
 	    	topic.saveQ()
 	    	.then(function (response){
 	    		conversationId = response._id.str;
-	    		console.log(response);
+	    		console.log("save teach "+response);
 	    		emitSocketMsg('teach',response);
+          console.log("save teach socket emitted");
 	    		respondBackToTwilio('teach');
+          console.log("save teach responsed");
 				})
 				.catch(function (err) { console.log(err); })
 				.done();
