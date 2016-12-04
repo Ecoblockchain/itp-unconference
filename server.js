@@ -8,6 +8,13 @@ var http = require('http');
 var path = require('path');
 var mongoose = require('mongoose-q')(require('mongoose')); // convenience methods for Q with mongoose. see https://github.com/iolo/mongoose-q
 
+
+var request = require('request'); // library to make requests to remote urls
+var Q = require('q'); // library for javascript promises
+var moment = require("moment"); // date manipulation library
+var Topic = require("models/model.js"); //db model... call like Model.Topic
+
+
 // the ExpressJS App
 var app = express();
 
@@ -136,17 +143,29 @@ function getData (req,res){
   	//console.log(socketsUtil);
   	//socketsUtil.calls('hello','hello world');
 
-  	Topic.findQ({'type':'teach'})
-  	.then(function(response){
-  		data['teach'] = response;
-  		return Topic.findQ({'type':'learn'})
-  	})
-  	.then(function(response){
-  		data['learn'] = response;
-  		return res.json(data);
-  	})
-  	.fail(function (err) { console.log(err); })
-  	.done();
+  	// Topic.findQ({'type':'teach'})
+  	// .then(function(response){
+  	// 	data['teach'] = response;
+  	// 	return Topic.findQ({'type':'learn'})
+  	// })
+  	// .then(function(response){
+  	// 	data['learn'] = response;
+  	// 	return res.json(data);
+  	// })
+  	// .fail(function (err) { console.log(err); })
+  	// .done();
+
+    Topic.findQ({'type':'teach'})
+    .then(function(response){
+      data['teach'] = response;
+      return Topic.findQ({'type':'learn'})
+    })
+    .then(function(response){
+      data['learn'] = response;
+      return res.json(data);
+    })
+    .fail(function (err) { console.log(err); })
+    .done();
 
 }
 
@@ -164,7 +183,7 @@ function twilioCallback (req,res){
     msgToRelay += words[i];
     if(i!=words.length-1) msgToRelay += ' ';
   }
-
+console.log(msgToRelay);
   switch(action) {
       case 'teach':
         handleTwilioMessage('teach',msgToRelay);
@@ -205,7 +224,7 @@ function twilioCallback (req,res){
 	    		emitSocketMsg('teach',response);
 	    		respondBackToTwilio('teach');
 				})
-				.fail(function (err) { console.log(err); })
+				.catch(function (err) { console.log(err); })
 				.done();
         break;
 
@@ -223,7 +242,7 @@ function twilioCallback (req,res){
 	    		emitSocketMsg('learn',response);
 	    		respondBackToTwilio('teach');
 				})
-				.fail(function (err) { console.log(err); })
+				.catch(function (err) { console.log(err); })
 				.done();
         break;
 	    case 'vote':
@@ -241,7 +260,7 @@ function twilioCallback (req,res){
 	    		emitSocketMsg('vote',response);
 	    		respondBackToTwilio('vote');
 	    	})
-	    	.fail(function (err) { console.log(err); })
+	    	.catch(function (err) { console.log(err); })
 				.done();
         break;
 	    default:
