@@ -1,4 +1,3 @@
-
 /**
  * Module dependencies.
  */
@@ -25,40 +24,39 @@ if (!process.env.TWILIO_AUTH_TOKEN) {
 // and other expressjs settings for the web server.
 //app.configure(function(){
 
-  // server port number
-  app.set('port', process.env.PORT || 5000);
+// server port number
+app.set('port', process.env.PORT || 5000);
 
-  //  templates directory to 'views'
-  app.set('views', __dirname + '/views');
+//  templates directory to 'views'
+app.set('views', __dirname + '/views');
 
-  // setup template engine - we're using Hogan-Express
-  app.set('view engine', 'html');
-  app.set('layout','layout');
-  app.engine('html', require('hogan-express')); // https://github.com/vol4ok/hogan-express
+// setup template engine - we're using Hogan-Express
+app.set('view engine', 'html');
+app.set('layout', 'layout');
+app.engine('html', require('hogan-express')); // https://github.com/vol4ok/hogan-express
 
-  //app.use(favicon('favicon.ico'));
-  app.use(bodyParser());
-  app.use(cookieParser());
-  app.use(methodOverride());
-  //app.use(app.router);
-  app.use(express.static(path.join(__dirname, 'public')));
+//app.use(favicon('favicon.ico'));
+app.use(bodyParser());
+app.use(cookieParser());
+app.use(methodOverride());
+//app.use(app.router);
+app.use(express.static(path.join(__dirname, 'public')));
 
-  // database connection
-  mongoose.Promise = global.Promise;
-  app.db = mongoose.connect(process.env.MONGODB_URI);
-  console.log(process.env.MONGODB_URI);
-  console.log("connected to database");
+// database connection
+mongoose.Promise = global.Promise;
+app.db = mongoose.connect(process.env.MONGODB_URI);
+console.log("connected to database");
 
 //});
 //app.configure('development', function(){
-  app.use(errorHandler());
+app.use(errorHandler());
 //});
 
 /**
  * CORS support.
  */
 
-app.all('*', function(req, res, next){
+app.all('*', function(req, res, next) {
   if (!req.get('Origin')) return next();
   // use "*" here to accept any origin
   res.set('Access-Control-Allow-Origin', '*');
@@ -74,8 +72,8 @@ app.all('*', function(req, res, next){
 app.get('/', index);
 app.get('/teach', teach);
 app.get('/learn', learn);
-app.get('/api/get/topics',getData);
-app.post('/twilio-callback',twilioCallback);
+app.get('/api/get/topics', getData);
+app.post('/twilio-callback', twilioCallback);
 
 // create NodeJS HTTP server using 'app'
 var server = require('http').createServer(app);
@@ -83,9 +81,8 @@ var server = require('http').createServer(app);
 // set up sockets
 var io = require('socket.io')(server);
 
-io.on('connection', function(socket){
-  socket.on('disconnect', function(){
-  });
+io.on('connection', function(socket) {
+  socket.on('disconnect', function() {});
 });
 
 /*
@@ -100,74 +97,80 @@ var Topic = require("./models/model.js"); //db model... call like Model.Topic
 //Twilio
 var twilio = require('twilio');
 
-function index (req, res) {
+function index(req, res) {
 
-    //build and render template
-    var viewData = {
-      pageTitle : "ITP January"
-    }
+  //build and render template
+  var viewData = {
+    pageTitle: "ITP January"
+  }
 
-    res.render('index.html', viewData);
-
-}
-
-
-function teach (req, res) {
-
-    //build and render template
-    var viewData = {
-      pageTitle : "TEACH | ITP January"
-    }
-
-    res.render('teach.html', viewData);
+  res.render('index.html', viewData);
 
 }
 
 
-function learn (req, res) {
+function teach(req, res) {
 
-    //build and render template
-    var viewData = {
-      pageTitle : "LEARN | ITP January"
-    }
+  //build and render template
+  var viewData = {
+    pageTitle: "TEACH | ITP January"
+  }
 
-    res.render('learn.html', viewData);
+  res.render('teach.html', viewData);
 
 }
 
-function getData (req,res){
-  	var data = {}; // data to respond back with
 
-  	//console.log(socketsUtil);
-  	//socketsUtil.calls('hello','hello world');
+function learn(req, res) {
 
-  	// Topic.findQ({'type':'teach'})
-  	// .then(function(response){
-  	// 	data['teach'] = response;
-  	// 	return Topic.findQ({'type':'learn'})
-  	// })
-  	// .then(function(response){
-  	// 	data['learn'] = response;
-  	// 	return res.json(data);
-  	// })
-  	// .fail(function (err) { console.log(err); })
-  	// .done();
+  //build and render template
+  var viewData = {
+    pageTitle: "LEARN | ITP January"
+  }
 
-    Topic.findQ({'type':'teach'})
-    .then(function(response){
-      data['teach'] = response;
-      return Topic.findQ({'type':'learn'})
+  res.render('learn.html', viewData);
+
+}
+
+function getData(req, res) {
+  var data = {}; // data to respond back with
+
+  //console.log(socketsUtil);
+  //socketsUtil.calls('hello','hello world');
+
+  // Topic.findQ({'type':'teach'})
+  // .then(function(response){
+  // 	data['teach'] = response;
+  // 	return Topic.findQ({'type':'learn'})
+  // })
+  // .then(function(response){
+  // 	data['learn'] = response;
+  // 	return res.json(data);
+  // })
+  // .fail(function (err) { console.log(err); })
+  // .done();
+
+  Topic.findQ({
+      'type': 'teach'
     })
-    .then(function(response){
+    .then(function(response) {
+      data['teach'] = response;
+      return Topic.findQ({
+        'type': 'learn'
+      })
+    })
+    .then(function(response) {
       data['learn'] = response;
       return res.json(data);
     })
-    .catch(function (err) { console.log(err); })
+    .catch(function(err) {
+      console.log(err);
+    })
     .done();
 
 }
 
-function twilioCallback (req,res){
+function twilioCallback(req, res) {
   var newMsg = req.body.Body;
   var conversationId; // an id to track the conversation, will be the mongoDb id
 
@@ -176,126 +179,155 @@ function twilioCallback (req,res){
   var words = newMsg.split(" ");
   var action = words[0].toLowerCase();
   var msgToRelay = ''; // all the stuff after the action word
-  for(var i=0;i<words.length;i++){
-    if(i==0) continue;
+  for (var i = 0; i < words.length; i++) {
+    if (i == 0) continue;
     msgToRelay += words[i];
-    if(i!=words.length-1) msgToRelay += ' ';
+    if (i != words.length - 1) msgToRelay += ' ';
   }
-  switch(action) {
-      case 'teach':
-        handleTwilioMessage('teach',msgToRelay);
-        break;
-      case 'learn':
-        handleTwilioMessage('learn',msgToRelay);
-        break;
-      case 'vote':
-        handleTwilioMessage('vote',msgToRelay);
-        break;
-      case 'name':
-        handleTwilioMessage('name',msgToRelay);
-        break;
-      default:
-        respondBackToTwilio('default');
-     }
+  switch (action) {
+    case 'teach':
+      handleTwilioMessage('teach', msgToRelay);
+      break;
+    case 'learn':
+      handleTwilioMessage('learn', msgToRelay);
+      break;
+    case 'vote':
+      handleTwilioMessage('vote', msgToRelay);
+      break;
+    case 'name':
+      handleTwilioMessage('name', msgToRelay);
+      break;
+    default:
+      respondBackToTwilio('default');
+  }
 
   //function does 3 things
   // 1. saves the data to db
   // 2. calls function to emit it to front-end via sockets
   // 3. responds back to twilio
 
-  function handleTwilioMessage(key,msg){
-    console.log("handleTwilioMessage "+msg)
-		switch(key) {
-	    case 'teach':
-	     var dataToSave = {
-	     	description: msg,
-	     	type: 'teach',
-	     	voteCount: 1,
-	     	voteCode: generateVoteCode()
-	     }
-	     // save to db;
+  function handleTwilioMessage(key, msg) {
+    switch (key) {
+      case 'teach':
+        var dataToSave = {
+            description: msg,
+            type: 'teach',
+            voteCount: 1,
+            voteCode: generateVoteCode()
+          }
+          // save to db;
 
-	     var topic = new Topic(dataToSave);
-       console.log("new topic "+topic.type);
-	    	topic.saveQ()
-	    	.then(function (response){
-	    		//conversationId = response._id.str;
-	    		console.log("save teach "+response);
-	    		emitSocketMsg('teach',response);
-          console.log("save teach socket emitted");
-	    		respondBackToTwilio('teach');
-          console.log("save teach responsed");
-				})
-				.catch(function (err) { console.log(err); })
-				.done();
+        var topic = new Topic(dataToSave);
+        topic.saveQ()
+          .then(function(response) {
+            //conversationId = response._id.str;
+            emitSocketMsg('teach', response);
+            respondBackToTwilio('teach');
+          })
+          .catch(function(err) {
+            console.log(err);
+          })
+          .done();
         break;
 
-	    case 'learn':
-	     var dataToSave = {
-	     	description: msg,
-	     	type: 'learn',
-	     	voteCount: 1,
-	     	voteCode: generateVoteCode()
-	     }
-	     // save to db;
-	     var topic = new Topic(dataToSave);
-	    	topic.saveQ()
-	    	.then(function (response){
-	    		emitSocketMsg('learn',response);
-	    		respondBackToTwilio('teach');
-				})
-				.catch(function (err) { console.log(err); })
-				.done();
+      case 'learn':
+        var dataToSave = {
+            description: msg,
+            type: 'learn',
+            voteCount: 1,
+            voteCode: generateVoteCode()
+          }
+          // save to db;
+        var topic = new Topic(dataToSave);
+        topic.saveQ()
+          .then(function(response) {
+            emitSocketMsg('learn', response);
+            respondBackToTwilio('teach');
+          })
+          .catch(function(err) {
+            console.log(err);
+          })
+          .done();
         break;
-	    case 'vote':
-	    	// handle this differently
-	    	Topic.findOneQ({'voteCode':msg})
-	    	.then(function(response){
-	    		if(response == null) return respondBackToTwilio('vote-fail');
-	    		else {
-	    			var newVoteCount = response.voteCount + 1;
-	    			var topicId = response._id;
-	    			return Topic.findByIdAndUpdateQ(topicId,{'voteCount':newVoteCount})
-	    		}
-	    	})
-	    	.then(function(response){
-	    		emitSocketMsg('vote',response);
-	    		respondBackToTwilio('vote');
-	    	})
-	    	.catch(function (err) { console.log(err); })
-				.done();
+      case 'vote':
+        // handle this differently
+        Topic.findOneQ({
+            'voteCode': msg
+          })
+          .then(function(response) {
+            if (response == null) return respondBackToTwilio('vote-fail');
+            else {
+              var newVoteCount = response.voteCount + 1;
+              var topicId = response._id;
+              return Topic.findByIdAndUpdateQ(topicId, {
+                'voteCount': newVoteCount
+              })
+            }
+          })
+          .then(function(response) {
+            emitSocketMsg('vote', response);
+            respondBackToTwilio('vote');
+          })
+          .catch(function(err) {
+            console.log(err);
+          })
+          .done();
         break;
-	    default:
-	      res.status(500).send({error:'Oops, something went wrong.'});
-		}
-	}
+      case 'name':
+        // add the user's name for the topic they want to teach
+        var dataToSave = {
+          person: {
+            name: msg,
+            phoneNumber: req.body.From
+          }
+        }
+        var topicId = req.cookies.conversation; // we store the topicId in the conversation cookie
+        Topic.findByIdAndUpdateQ(topicId, dataToSave)
+          .then(function(response) {
+            if (response == null) return respondBackToTwilio('name-fail');
+            else {
+              //emitSocketMsg('name',response);
+              return respondBackToTwilio('name');
+            }
+          })
+          .fail(function(err) {
+            console.log(err);
+          })
+          .done();
+        break;
+      default:
+        res.status(500).send({
+          error: 'Oops, something went wrong.'
+        });
+    }
+  }
 
-  function generateVoteCode(){
+  function generateVoteCode() {
     var code = '';
     var possible = "abcdefghjkmnpqrstuvwxyz23456789";
-    for(var i=0;i<3;i++)
+    for (var i = 0; i < 3; i++)
       code += possible.charAt(Math.floor(Math.random() * possible.length));
     return code;
   }
 
-  function respondBackToTwilio(key){
+  function respondBackToTwilio(key) {
     console.log('respondBackToTwilio');
 
     var twilioResp = new twilio.TwimlResponse();
 
-    switch(key) {
+    switch (key) {
       case 'teach':
-        twilioResp.sms('Awesome! We have noted that you want to teach ' + msgToRelay +'. One more step, please respond with your name. Start your next message with the word Name, like Name Dan Shiffman');
-        res.cookie('conversation',conversationId);
+        twilioResp.sms('Awesome! We have noted that you want to teach ' + msgToRelay + '. One more step, please respond with your name. Start your next message with the word Name, like Name Dan Shiffman');
+        res.cookie('conversation', conversationId);
         break;
       case 'learn':
         twilioResp.sms('Sweet! We have noted that you want to learn ' + msgToRelay);
         break;
       case 'vote':
-        twilioResp.sms('Oh cool! We have noted your vote for the topic "' + msgToRelay+'"');
+        twilioResp.sms('Oh cool! We have noted your vote for the topic "' + msgToRelay + '"');
         break;
       case 'vote-fail':
-        twilioResp.sms('Oops! Could not find that vote code ('+msgToRelay+') :( Try again');
+        twilioResp.sms('Oops! Could not find that vote code (' + msgToRelay + ') :( Try again');
         break;
       case 'name':
         twilioResp.sms('Thanks ' + msgToRelay + '! We have noted your name and all that.');
@@ -305,19 +337,22 @@ function twilioCallback (req,res){
         break;
       default:
         twilioResp.sms('We got your message, but you need to start it with either teach, learn, vote, or name!');
-      }
+    }
     res.set('Content-Type', 'text/xml');
     res.send(twilioResp.toString());
   }
 
-  function emitSocketMsg(key,data){
+  function emitSocketMsg(key, data) {
     console.log("emitSocketMsg");
-    var dataToRelay = {key:key,topic:data};
-    io.sockets.emit('twilioData',dataToRelay);
+    var dataToRelay = {
+      key: key,
+      topic: data
+    };
+    io.sockets.emit('twilioData', dataToRelay);
   }
 }
 
 // listen
-server.listen(app.get('port'), function(){
+server.listen(app.get('port'), function() {
   console.log("Express server listening on port " + app.get('port'));
 });
