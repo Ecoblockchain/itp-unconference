@@ -205,103 +205,91 @@ function twilioCallback(req, res) {
   // 1. saves the data to db
   // 2. calls function to emit it to front-end via sockets
   // 3. responds back to twilio
-
-  function handleTwilioMessage(key, msg) {
-    switch (key) {
+  function handleTwilioMessage(key,msg){
+    switch(key) {
       case 'teach':
-        var dataToSave = {
-            description: msg,
-            type: 'teach',
-            voteCount: 1,
-            voteCode: generateVoteCode()
-          }
-          // save to db;
-
-        var topic = new Topic(dataToSave);
+       var dataToSave = {
+        description: msg,
+        type: 'teach',
+        voteCount: 1,
+        person: {phoneNumber: req.body.From},
+        voteCode: generateVoteCode()
+       }
+       // save to db;
+       var topic = Topic(dataToSave);
         topic.saveQ()
-          .then(function(response) {
-            //conversationId = response._id.str;
-            emitSocketMsg('teach', response);
-            respondBackToTwilio('teach');
-          })
-          .catch(function(err) {
-            console.log(err);
-          })
-          .done();
+        .then(function (response){
+          conversationId = response._id;
+          conversationId = conversationId.toString();
+          emitSocketMsg('teach',response);
+          respondBackToTwilio('teach');
+        })
+        .fail(function (err) { console.log(err); })
+        .done();
         break;
 
       case 'learn':
-        var dataToSave = {
-            description: msg,
-            type: 'learn',
-            voteCount: 1,
-            voteCode: generateVoteCode()
-          }
-          // save to db;
-        var topic = new Topic(dataToSave);
+       var dataToSave = {
+        description: msg,
+        type: 'learn',
+        voteCount: 1,
+        voteCode: generateVoteCode()
+       }
+       // save to db;
+       var topic = new Topic(dataToSave);
         topic.saveQ()
-          .then(function(response) {
-            emitSocketMsg('learn', response);
-            respondBackToTwilio('teach');
-          })
-          .catch(function(err) {
-            console.log(err);
-          })
-          .done();
+        .then(function (response){
+          emitSocketMsg('learn',response);
+          respondBackToTwilio('learn');
+        })
+        .fail(function (err) { console.log(err); })
+        .done();
         break;
       case 'vote':
-        // handle this differently
-        Topic.findOneQ({
-            'voteCode': msg
-          })
-          .then(function(response) {
-            if (response == null) return respondBackToTwilio('vote-fail');
-            else {
-              var newVoteCount = response.voteCount + 1;
-              var topicId = response._id;
-              return Topic.findByIdAndUpdateQ(topicId, {
-                'voteCount': newVoteCount
-              })
-            }
-          })
-          .then(function(response) {
-            emitSocketMsg('vote', response);
+        // increment the vote in the db and then let the front-end know
+        var emitNewData = true; // should we emit the data to front-end? becomes false if error hit
+        Topic.findOneQ({'voteCode':msg})
+        .then(function(response){
+          if(response == null) {
+            emitNewData = false;
+            return respondBackToTwilio('vote-fail');
+          }
+          else {
+            var newVoteCount = response.voteCount + 1;
+            var topicId = response._id;
+            return Topic.findByIdAndUpdateQ(topicId,{'voteCount':newVoteCount})
+          }
+        })
+        .then(function(response){
+          if(emitNewData){
+            msgToRelay = response.description; // change the reponsse msg to the topic
+            emitSocketMsg('vote',response);
             respondBackToTwilio('vote');
-          })
-          .catch(function(err) {
-            console.log(err);
-          })
-          .done();
+          }
+          else return;
+        })
+        .fail(function (err) { console.log(err); })
+        .done();
         break;
       case 'name':
         // add the user's name for the topic they want to teach
-        var dataToSave = {
-          person: {
-            name: msg,
-            phoneNumber: req.body.From
-          }
-        }
+        var dataToSave = {person: {name:msg,phoneNumber: req.body.From}}
         var topicId = req.cookies.conversation; // we store the topicId in the conversation cookie
-        Topic.findByIdAndUpdateQ(topicId, dataToSave)
-          .then(function(response) {
-            if (response == null) return respondBackToTwilio('name-fail');
-            else {
-              //emitSocketMsg('name',response);
-              return respondBackToTwilio('name');
-            }
-          })
-          .fail(function(err) {
-            console.log(err);
-          })
-          .done();
+        Topic.findByIdAndUpdateQ(topicId,dataToSave)
+        .then(function(response){
+          if(response == null) return respondBackToTwilio('name-fail');
+          else {
+            //emitSocketMsg('name',response);
+            return respondBackToTwilio('name');
+          }
+        })
+        .fail(function (err) { console.log(err); })
+        .done();
         break;
       default:
-        res.status(500).send({
-          error: 'Oops, something went wrong.'
-        });
+        res.status(500).send({error:'Oops, something went wrong.'});
     }
   }
-
   function generateVoteCode() {
     var code = '';
     var possible = "abcdefghjkmnpqrstuvwxyz23456789";
@@ -310,24 +298,23 @@ function twilioCallback(req, res) {
     return code;
   }
 
-  function respondBackToTwilio(key) {
-    console.log('respondBackToTwilio');
+  function respondBackToTwilio(key){
 
     var twilioResp = new twilio.TwimlResponse();
 
-    switch (key) {
+    switch(key) {
       case 'teach':
-        twilioResp.sms('Awesome! We have noted that you want to teach ' + msgToRelay + '. One more step, please respond with your name. Start your next message with the word Name, like Name Dan Shiffman');
-        res.cookie('conversation', conversationId);
+        twilioResp.sms('Awesome! We have noted that you want to teach ' + msgToRelay +'. One more step, please respond with your name. Start your next message with the word Name, like Name Dan Shiffman');
+        res.cookie('conversation',conversationId);
         break;
       case 'learn':
         twilioResp.sms('Sweet! We have noted that you want to learn ' + msgToRelay);
         break;
       case 'vote':
-        twilioResp.sms('Oh cool! We have noted your vote for the topic "' + msgToRelay + '"');
+        twilioResp.sms('Oh cool! We have noted your vote for the topic "' + msgToRelay+'"');
         break;
       case 'vote-fail':
-        twilioResp.sms('Oops! Could not find that vote code (' + msgToRelay + ') :( Try again');
+        twilioResp.sms('Oops! Could not find that vote code ('+msgToRelay+') :( Try again');
         break;
       case 'name':
         twilioResp.sms('Thanks ' + msgToRelay + '! We have noted your name and all that.');
@@ -337,10 +324,11 @@ function twilioCallback(req, res) {
         break;
       default:
         twilioResp.sms('We got your message, but you need to start it with either teach, learn, vote, or name!');
-    }
+      }
     res.set('Content-Type', 'text/xml');
     res.send(twilioResp.toString());
   }
+
 
   function emitSocketMsg(key, data) {
     console.log("emitSocketMsg");
