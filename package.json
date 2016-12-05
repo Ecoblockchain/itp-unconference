@@ -2,17 +2,16 @@
   "name": "itp-january",
   "version": "0.0.1",
   "dependencies": {
-    "dotenv": "^1.2.0",
-    "express": "3.0.0rc5",
-    "hogan-express": "0.3.3",
-    "moment": "1.7.2",
-    "mongoose": "3.5.x",
-    "mongoose-q": "0.0.10",
-    "q": ">= 1.0.0",
-    "request": "2.16.6",
-    "socket.io": "1.2.0",
-    "twilio": "^1.7.0"
-  },
+  "express": "3.0.0rc5",
+  "hogan-express" : "0.3.3",
+  "moment" : "1.7.2",
+  "mongoose": "^4.1.9",
+  "mongoose-q": "0.0.10",
+  "q": ">= 1.0.0",
+  "request" : "2.16.6",
+  "twilio" : "1.7.0",
+  "socket.io" : "1.2.0"
+},
   "engines": {
     "node": "0.8.x",
     "npm": "2.2.x"
