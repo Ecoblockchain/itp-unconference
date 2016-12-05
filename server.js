@@ -101,7 +101,7 @@ function index(req, res) {
 
   //build and render template
   var viewData = {
-    pageTitle: "ITP January"
+    pageTitle: "xStory Unconference"
   }
 
   res.render('index.html', viewData);
@@ -113,7 +113,7 @@ function teach(req, res) {
 
   //build and render template
   var viewData = {
-    pageTitle: "TEACH | ITP January"
+    pageTitle: "TEACH | xStory Unconference"
   }
 
   res.render('teach.html', viewData);
@@ -125,7 +125,7 @@ function learn(req, res) {
 
   //build and render template
   var viewData = {
-    pageTitle: "LEARN | ITP January"
+    pageTitle: "LEARN | xStory Unconference"
   }
 
   res.render('learn.html', viewData);
